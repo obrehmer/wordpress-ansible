@@ -13,6 +13,9 @@ jobs:
             python -m pip install --upgrade pip
             pip install ansible ansible-lint
       - run:
+          name: Prepare vault password
+          command: echo "xxx" > /home/circleci/.vaultpass
+      - run:
           name: Ansible Syntax Check
           command: |
             export ANSIBLE_CONFIG=ansible.cfg
@@ -20,6 +23,9 @@ jobs:
       - run:
           name: Ansible Lint
           command: ansible-lint install.yml
+      - run:
+          name: Cleanup
+          command: rm /home/circleci/.vaultpass
 workflows:
   version: 2
   ansible-check-workflow:
