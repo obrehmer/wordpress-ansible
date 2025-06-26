@@ -128,6 +128,7 @@
       ignore_errors: true
 
     - name: Get current iptables rules from system
+      changed_when: false
       command: iptables-save
       register: current_rules
 
@@ -142,18 +143,25 @@
       diff: true
 
     - name: Set kernel parameters for Redis (if installed)
+      when: redis_installed is defined and redis_installed
+      vars:
+        redis_installed: "{{ 'redis-server' in ansible_facts.packages or 'redis' in ansible_facts.packages }}"
       block:
 
         - name: Set vm.overcommit_memory at runtime
+          changed_when: false
           ansible.builtin.command: echo 1 > /proc/sys/vm/overcommit_memory
 
         - name: Set vm.swappiness at runtime
+          changed_when: false
           ansible.builtin.command: echo 1 > /proc/sys/vm/swappiness
 
         - name: Disable Transparent Huge Pages (THP) at runtime
+          changed_when: false
           ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/enabled
 
         - name: Disable Transparent Huge Pages defrag at runtime
+          changed_when: false
           ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/defrag
 
         - name: Ensure vm.overcommit_memory is persisted in sysctl.conf
@@ -202,9 +210,6 @@
             enabled: true
             state: started
 
-      when: redis_installed is defined and redis_installed
-      vars:
-        redis_installed: "{{ 'redis-server' in ansible_facts.packages or 'redis' in ansible_facts.packages }}"
 
 
     # Apache Configuration
