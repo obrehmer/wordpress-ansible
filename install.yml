@@ -46,7 +46,7 @@
       - 172.64.0.0/13
       - 131.0.72.0/22
     domain: example.com
-xxxxx
+
   tasks:
 
     - name: Gather package facts
