@@ -273,6 +273,12 @@
         enabled: true
         state: started
 
+    - name: Enable redis
+      systemd:
+        name: redis-server
+        enabled: true
+        state: started
+
     - name: Create WordPress MySQL database
       mysql_db:
         name: "{{ database }}"
