@@ -60,6 +60,7 @@
     - name: Set TERM environment variable
       copy:
         dest: /etc/profile.d/terminal.sh
+        mode: '0644'
         content: |
           TERM=xterm
           export TERM
@@ -158,6 +159,7 @@
         - name: Ensure vm.overcommit_memory is persisted in sysctl.conf
           ansible.builtin.lineinfile:
             path: /etc/sysctl.conf
+            mode: '0644'
             regexp: '^vm.overcommit_memory'
             line: 'vm.overcommit_memory = 1'
             create: true
@@ -165,16 +167,19 @@
         - name: Ensure vm.swappiness is persisted in sysctl.conf
           ansible.builtin.lineinfile:
             path: /etc/sysctl.conf
+            mode: '0644'
             regexp: '^vm.swappiness'
             line: 'vm.swappiness = 1'
             create: true
 
         - name: Reload sysctl settings
           ansible.builtin.command: sysctl -p
+          changed_when: false
 
         - name: Create systemd service to persistently disable THP
           ansible.builtin.copy:
             dest: /etc/systemd/system/disable-thp.service
+            mode: '0644'
             content: |
               [Unit]
               Description=Disable Transparent Huge Pages (THP)
@@ -206,6 +211,7 @@
     - name: Write Apache VirtualHost configuration for {{ domain }}
       copy:
         dest: /etc/apache2/sites-available/{{ domain }}.conf
+        mode: '0644'
         content: |
           <VirtualHost *:80>
               ServerName {{ domain }}
@@ -326,7 +332,7 @@
         path: /tmp/wordpress
         state: absent
 
-    - name: create backup dir
+    - name: Create backup dir
       file:
         path: /backup/{{ domain }}/mysql/
         state: directory
