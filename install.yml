@@ -1,5 +1,5 @@
 ---
-- name: Install wordpress blog 
+- name: Install wordpress blog
   hosts: all
   become: yes
   gather_facts: true
@@ -25,7 +25,7 @@
       - curl
       - python3
       - iptables-persistent
-      - apache2-utils 
+      - apache2-utils
       - unzip
       - redis-server
     key_file: authorized_keys.vault
@@ -143,36 +143,36 @@
 
     - name: Set kernel parameters for Redis (if installed)
       block:
-    
+
         - name: Set vm.overcommit_memory at runtime
           ansible.builtin.command: echo 1 > /proc/sys/vm/overcommit_memory
-    
+
         - name: Set vm.swappiness at runtime
           ansible.builtin.command: echo 1 > /proc/sys/vm/swappiness
-    
+
         - name: Disable Transparent Huge Pages (THP) at runtime
           ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/enabled
-    
+
         - name: Disable Transparent Huge Pages defrag at runtime
           ansible.builtin.command: echo never > /sys/kernel/mm/transparent_hugepage/defrag
-    
+
         - name: Ensure vm.overcommit_memory is persisted in sysctl.conf
           ansible.builtin.lineinfile:
             path: /etc/sysctl.conf
             regexp: '^vm.overcommit_memory'
             line: 'vm.overcommit_memory = 1'
             create: yes
-    
+
         - name: Ensure vm.swappiness is persisted in sysctl.conf
           ansible.builtin.lineinfile:
             path: /etc/sysctl.conf
             regexp: '^vm.swappiness'
             line: 'vm.swappiness = 1'
             create: yes
-    
+
         - name: Reload sysctl settings
           ansible.builtin.command: sysctl -p
-    
+
         - name: Create systemd service to persistently disable THP
           ansible.builtin.copy:
             dest: /etc/systemd/system/disable-thp.service
@@ -182,26 +182,26 @@
               DefaultDependencies=no
               After=sysinit.target local-fs.target
               Before=basic.target
-    
+
               [Service]
               Type=oneshot
               ExecStart=/bin/sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
               ExecStart=/bin/sh -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
               RemainAfterExit=true
-    
+
               [Install]
               WantedBy=multi-user.target
-    
+
         - name: Enable and start disable-thp.service
           ansible.builtin.systemd:
             name: disable-thp.service
             enabled: true
             state: started
-    
+
       when: redis_installed is defined and redis_installed
       vars:
         redis_installed: "{{ 'redis-server' in ansible_facts.packages or 'redis' in ansible_facts.packages }}"
-    
+
 
     # Apache Configuration
     - name: Write Apache VirtualHost configuration for {{ domain }}
@@ -251,7 +251,7 @@
         - headers
         - setenvif
       notify: Restart Apache
-    
+
 
     - name: Enable mysql
       systemd:
@@ -335,8 +335,8 @@
         group: root
         mode: '0755'
         recurse: yes
-    
-    - name:  MySQL-Dump-Skript 
+
+    - name: MySQL-Dump-Skript
       copy:
         dest: /usr/local/bin/mysql_backup_{{ domain }}.sh
         mode: '0755'
@@ -347,19 +347,19 @@
           BACKUP_DIR="/backup/{{ domain }}/mysql"
           DATE=$(date +%F)
           DUMP_FILE="${BACKUP_DIR}/db-${DATE}.sql.gz"
-    
+
           mysqldump --defaults-extra-file=/etc/mysql/debian.cnf --all-databases | gzip > "$DUMP_FILE"
-    
+
           find "$BACKUP_DIR" -type f -name "db-*.sql.gz" -mtime +10 -delete
-    
-    - name: Cronjob  MySQL-Dump 
+
+    - name: Cronjob  MySQL-Dump
       cron:
         name: " MySQL-Dump {{ domain }}"
         user: root
         job: "/usr/local/bin/mysql_backup_{{ domain }}.sh"
         minute: 30
         hour: 2
-    
+
   handlers:
 
     - name: Reload systemd daemon
