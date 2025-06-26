@@ -248,13 +248,6 @@
         enabled: true
         state: started
 
-    - name: Enable redis
-      systemd:
-        name: redis-server
-        enabled: true
-        state: started
-
-
     - name: Enable required Apache modules
       ansible.builtin.command: a2enmod {{ item }}
       args:
@@ -277,6 +270,12 @@
     - name: Enable fpm
       systemd:
         name: php8.3-fpm
+        enabled: true
+        state: started
+
+    - name: Enable redis
+      systemd:
+        name: redis-server
         enabled: true
         state: started
 
