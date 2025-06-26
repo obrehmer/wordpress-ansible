@@ -304,9 +304,11 @@
         login_unix_socket: /var/run/mysqld/mysqld.sock
 
     - name: Download latest WordPress
-      shell: curl -L -o /tmp/latest.zip https://wordpress.org/latest.zip
-      args:
-        creates: /tmp/latest.zip
+      changed_when: false
+      get_url:
+        path: https://wordpress.org/latest.zip
+        dest: /tmp/latest.zip
+        mode: '0644'
 
     - name: Unarchive WordPress to temporary location
       unarchive:
