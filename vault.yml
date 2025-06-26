@@ -1,0 +1,4 @@
+# only for linting, please delete and recreate with ansible-vault (check README)
+mysqluser: xxx
+mysqlpass: xxx
+database: xxx
