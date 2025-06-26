@@ -1,0 +1,17 @@
+image: python:3.10
+
+pipelines:
+  default:
+    - step:
+        name: 'Ansible Syntax Check & Lint'
+        caches:
+          - pip
+        script:
+          - apt-get update && apt-get install -y sshpass
+          - pip install --upgrade pip
+          - pip install ansible ansible-lint
+          - echo "$ANSIBLE_VAULT_PASSWORD" > ~/.vaultpass
+          - export ANSIBLE_CONFIG=ansible.cfg
+          - ansible-playbook install.yml --syntax-check
+          - ansible-lint install.yml
+          - rm ~/.vaultpass
