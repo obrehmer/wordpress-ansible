@@ -210,8 +210,6 @@
             enabled: true
             state: started
 
-
-
     # Apache Configuration
     - name: Write Apache VirtualHost configuration for {{ domain }}
       copy:
