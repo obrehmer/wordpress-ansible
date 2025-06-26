@@ -1,9 +1,8 @@
 ---
 - name: Install wordpress blog
   hosts: all
-  become: yes
+  become: true
   gather_facts: true
-  strategy: free
   vars_files:
     - vault.yml
   vars:
@@ -69,7 +68,7 @@
       apt:
         name: "{{ packages }}"
         state: present
-        update_cache: yes
+        update_cache: true
       poll: 0
       register: apt_job
       notify: Reload Apache
@@ -161,14 +160,14 @@
             path: /etc/sysctl.conf
             regexp: '^vm.overcommit_memory'
             line: 'vm.overcommit_memory = 1'
-            create: yes
+            create: true
 
         - name: Ensure vm.swappiness is persisted in sysctl.conf
           ansible.builtin.lineinfile:
             path: /etc/sysctl.conf
             regexp: '^vm.swappiness'
             line: 'vm.swappiness = 1'
-            create: yes
+            create: true
 
         - name: Reload sysctl settings
           ansible.builtin.command: sysctl -p
@@ -302,7 +301,7 @@
       unarchive:
         src: /tmp/latest.zip
         dest: /tmp/
-        remote_src: yes
+        remote_src: true
 
     - name: Move WordPress files to web root
       command: mv /tmp/wordpress /var/www/{{ domain }}
@@ -313,7 +312,7 @@
       file:
         path: /var/www/{{ domain }}
         state: directory
-        recurse: yes
+        recurse: true
         owner: www-data
         group: www-data
 
@@ -334,7 +333,7 @@
         owner: root
         group: root
         mode: '0755'
-        recurse: yes
+        recurse: true
 
     - name: MySQL-Dump-Skript
       copy:
@@ -364,7 +363,7 @@
 
     - name: Reload systemd daemon
       systemd:
-        daemon_reload: yes
+        daemon_reload: true
 
     - name: Restart Apache
       service:
