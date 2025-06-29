@@ -1,0 +1,78 @@
+---
+# tasks file for firewall
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - iptables-persistent
+
+- name: Define allowed ports
+  set_fact:
+    allowed_ports: "{{ [firewall_ssh_port] }}"
+
+- name: Configure iptables rules for allowed ports
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ item }}"
+    jump: ACCEPT
+    action: insert
+    rule_num: 1
+    comment: Allow incoming traffic on specified ports only
+  loop: "{{ allowed_ports }}"
+
+- name: Allow HTTP traffic only from Cloudflare IP ranges
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ firewall_web_port }}"
+    source: "{{ item }}"
+    jump: ACCEPT
+    action: insert
+    rule_num: 1
+    comment: Allow HTTP (port 80) from Cloudflare only
+  loop: "{{ firewall_cloudflare_sources }}"
+
+- name: Allow incoming traffic from localhost
+  iptables:
+    chain: INPUT
+    protocol: all
+    source: 127.0.0.1
+    jump: ACCEPT
+    action: insert
+    comment: Allow incoming traffic from localhost
+
+- name: Allow established and related connections
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+
+- name: Set default policy to drop all other incoming connections
+  iptables:
+    chain: INPUT
+    policy: DROP
+
+- name: Get current saved iptables rules
+  slurp:
+    src: /etc/iptables/rules.v4
+  register: saved_rules
+  ignore_errors: true
+
+- name: Get current iptables rules from system
+  changed_when: false
+  command: iptables-save
+  register: current_rules
+
+- name: Save iptables rules if changed
+  copy:
+    content: "{{ current_rules.stdout }}"
+    dest: /etc/iptables/rules.v4
+    owner: root
+    group: root
+    mode: '0644'
+  when: saved_rules is not failed
+  diff: true

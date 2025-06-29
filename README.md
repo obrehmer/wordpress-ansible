@@ -22,7 +22,7 @@ This playbook automates the installation of WordPress on an Ubuntu 24.04 VM usin
 
 ### 2. Configure the Domain in the Playbook
 
-Edit `install.yml` and set the domain variable to your Cloudflare DNS name:
+Edit `group_vars/all.yml` and set the domain variable to your Cloudflare DNS name:
 
 ```yaml
 domain: your-domain.com
@@ -38,9 +38,10 @@ echo YOUR_VAULT_PASSWORD >> ~/.vaultpass
 
 ### 4. Create the Vault File
 
-Create an encrypted vault file to store sensitive variables:
+Create an encrypted vault file to store sensitive variables. Delete the existing demo file first.
 
 ```bash
+rm vault.yml
 ansible-vault create vault.yml
 ```
 
@@ -61,7 +62,7 @@ database: DATABASE_NAME
 Execute the playbook using your server’s **IP address**, not the domain name:
 
 ```bash
-ansible-playbook -i YOUR_VM_IP, install.yml
+ansible-playbook -i YOUR_VM_IP, site.yml
 ```
 
 > ⚠️ **Important:** Do **not** use the domain name if Cloudflare proxying is enabled – the connection will fail. Use the **IP address** instead.

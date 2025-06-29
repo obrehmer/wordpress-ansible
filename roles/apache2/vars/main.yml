@@ -1,0 +1,9 @@
+---
+# vars file for apache2
+
+apache2_modules:
+  - proxy
+  - proxy_fcgi
+  - rewrite
+  - headers
+  - setenvif
