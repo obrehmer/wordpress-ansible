@@ -76,4 +76,6 @@
   lineinfile:
     path: /etc/pam.d/sshd
     line: 'session optional pam_motd.so motd=/etc/motd'
+    mode: '0644'
+    owner: root
     create: true
