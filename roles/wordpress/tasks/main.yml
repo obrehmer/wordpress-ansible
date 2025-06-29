@@ -1,0 +1,36 @@
+---
+# tasks file for wordpress
+- name: Download latest WordPress
+  get_url:
+    url: https://wordpress.org/latest.zip
+    dest: /tmp/latest.zip
+    mode: '0644'
+
+- name: Unarchive WordPress to temporary location
+  unarchive:
+    src: /tmp/latest.zip
+    dest: /tmp/
+    remote_src: true
+
+- name: Move WordPress files to web root
+  command: mv /tmp/wordpress /var/www/{{ domain }}
+  args:
+    creates: /var/www/{{ domain }}/wp-config-sample.php
+
+- name: Ensure correct ownership
+  file:
+    path: /var/www/{{ domain }}
+    state: directory
+    recurse: true
+    owner: www-data
+    group: www-data
+
+- name: Remove temporary WordPress zip
+  file:
+    path: /tmp/latest.zip
+    state: absent
+
+- name: Remove temporary WordPress unzipped directory
+  file:
+    path: /tmp/wordpress
+    state: absent

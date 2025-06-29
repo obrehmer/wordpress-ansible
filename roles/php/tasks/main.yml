@@ -1,0 +1,22 @@
+---
+# tasks file for php
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - php8.3-cli
+    - php8.3-fpm
+    - php8.3-mysql
+    - php8.3-opcache
+    - php8.3-mbstring
+    - php8.3-xml
+    - php8.3-gd
+    - php8.3-curl
+
+- name: Enable fpm
+  systemd:
+    name: php8.3-fpm
+    enabled: true
+    state: started

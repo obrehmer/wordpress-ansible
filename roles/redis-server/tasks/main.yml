@@ -1,0 +1,68 @@
+# tasks file for redis-server
+
+- name: Install Redis and PHP Redis extension
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - redis-server
+    - php8.3-redis
+
+# Set kernel parameters at runtime using sysctl (idempotent & lint-clean)
+- name: Ensure vm.overcommit_memory is set at runtime
+  sysctl:
+    name: vm.overcommit_memory
+    value: '1'
+    state: present
+    reload: true
+
+- name: Ensure vm.swappiness is set at runtime
+  sysctl:
+    name: vm.swappiness
+    value: '1'
+    state: present
+    reload: true
+
+# Disable THP at runtime (not persistent, only until reboot)
+- name: Disable Transparent Huge Pages (THP) at runtime
+  shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled
+  changed_when: false
+
+- name: Disable Transparent Huge Pages defrag at runtime
+  shell: echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  changed_when: false
+
+# Persistent disablement of THP via systemd service
+- name: Create systemd service to disable THP persistently
+  copy:
+    dest: /etc/systemd/system/disable-thp.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Disable Transparent Huge Pages (THP)
+      DefaultDependencies=no
+      After=sysinit.target local-fs.target
+      Before=basic.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+      ExecStart=/bin/sh -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+      RemainAfterExit=true
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable and start disable-thp.service
+  systemd:
+    name: disable-thp.service
+    enabled: true
+    state: started
+
+# Ensure Redis service is enabled and running
+- name: Enable and start redis-server
+  systemd:
+    name: redis-server
+    enabled: true
+    state: started

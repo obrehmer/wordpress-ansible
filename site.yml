@@ -1,0 +1,17 @@
+---
+- name: Provision Webserver Stack
+  hosts: all
+  become: true
+
+  vars_files:
+    - vault.yml
+
+  roles:
+    - sysprep
+    - firewall
+    - apache2
+    - php
+    - mysql-server
+    - redis-server
+    - wordpress
+    - backup

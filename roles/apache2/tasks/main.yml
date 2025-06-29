@@ -1,0 +1,38 @@
+---
+# tasks file for apache
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - apache2
+    - apache2-utils
+    - libapache2-mod-fcgid
+
+- name: Deploy Apache VirtualHost config for {{ domain }}
+  template:
+    src: vhost.conf.j2
+    dest: "/etc/apache2/sites-available/{{ domain }}.conf"
+    mode: '0644'
+  notify: Restart Apache
+
+- name: Enable site using a2ensite
+  command: a2ensite {{ domain }}.conf
+  args:
+    creates: "/etc/apache2/sites-enabled/{{ domain }}.conf"
+  notify: Restart Apache
+
+- name: Enable Apache
+  systemd:
+    name: apache2
+    enabled: true
+    state: started
+
+- name: Enable required Apache modules
+  command: "a2enmod {{ item }}"
+  args:
+    creates: "/etc/apache2/mods-enabled/{{ item }}.load"
+  loop: "{{ apache2_modules }}"
+  notify: Restart Apache

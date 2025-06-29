@@ -1,0 +1,17 @@
+<VirtualHost *:80>
+    ServerName {{ domain }}
+    DocumentRoot /var/www/{{ domain }}
+
+    <Directory /var/www/{{ domain }}>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/run/php/php8.3-fpm.sock|fcgi://localhost/"
+    </FilesMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ domain }}_error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ domain }}_access.log combined
+</VirtualHost>

@@ -1,0 +1,38 @@
+---
+# tasks file for mysql-server
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - mysql-server
+
+- name: Create WordPress MySQL database
+  mysql_db:
+    name: "{{ database }}"
+    state: present
+    encoding: utf8mb4
+    collation: utf8mb4_general_ci
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create WordPress MySQL user
+  mysql_user:
+    name: "{{ mysqluser }}"
+    password: "{{ mysqlpass }}"
+    host: localhost
+    priv: "{{ database }}.*:ALL"
+    state: present
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Flush MySQL privileges
+  mysql_user:
+    name: "{{ mysqluser }}"
+    host: localhost
+    check_implicit_admin: true
+    state: present
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
