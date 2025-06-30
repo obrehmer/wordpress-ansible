@@ -18,11 +18,13 @@ jobs:
       - run:
           name: Ansible Syntax Check
           command: |
+            cd ansible
             export ANSIBLE_CONFIG=ansible.cfg
             ansible-playbook site.yml --syntax-check
       - run:
           name: Ansible Lint
-          command: ansible-lint site.yml
+          command: |
+            ansible-lint site.yml
       - run:
           name: Cleanup
           command: rm /home/circleci/.vaultpass
